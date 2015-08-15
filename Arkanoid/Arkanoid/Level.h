@@ -18,6 +18,12 @@ public:
     int GetPlayerLenght() { return m_playerLenght; }
     glm::vec2& GetBallPosition() { return m_ballPosition; }
 
+    int GetSizeVecBricks(){ return m_bricksPosition.size(); }
+
+    //Setters
+
+    
+
 private:
     std::vector <std::string> m_levelData;
 

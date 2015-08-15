@@ -27,14 +27,7 @@ void PlayerStats::LifeAdd()
 	m_life++;
 }
 
-bool PlayerStats::LifeSubtract()
+void PlayerStats::LifeSubtract()
 {
-	if (--m_life)
-	{
-		return 1; 
-	}
-	else
-	{
-		return 0; //to -> game over
-	}
+    m_life--;
 }

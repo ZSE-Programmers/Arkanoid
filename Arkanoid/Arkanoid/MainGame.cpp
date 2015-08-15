@@ -66,6 +66,7 @@ void MainGame::ProcessInput()
 
 void MainGame::GameLoop()
 {
+    m_playerStats.ShowStats();
     while (m_gameState != GameState::EXIT)
     {
         ProcessInput();
@@ -131,6 +132,27 @@ void MainGame::Update()
     m_player.Update();
     if (m_ball.Update(m_level.GetLevelData(), m_player.GetStartPos(), m_player.GetEndPos(), m_level.GetBricksPosition()) != true)
     {
+        m_playerStats.LifeSubtract();
+
+        if (m_playerStats.GetLife()) //life: 1 or more
+        {
+            m_soundEffects.PlaySound(1);
+            m_ball.Init(m_level.GetBallPosition(), glm::vec2(-0.5f, -0.5f), 0.2f, &m_soundEffects);
+            m_playerStats.ShowStats();
+        }
+        else
+        {
+            m_soundEffects.PlaySound(4); //LOSE
+            m_playerStats.ShowStats();
+
+            m_gameState = GameState::EXIT;
+        }
+    }
+    if (!m_level.GetSizeVecBricks()) //WIN
+    {
+        m_soundEffects.PlaySound(3);
+        m_playerStats.ShowStats();
+
         m_gameState = GameState::EXIT;
     }
 }

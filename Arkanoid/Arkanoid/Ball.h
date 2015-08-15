@@ -19,11 +19,13 @@ public:
     glm::vec2& GetPosition() { return m_position; }
     const float GetRadius() { return BALL_RADIUS; }
 
+    void SetBallPosition(glm::vec2 pos){ m_position = pos; }
+
 private:
     bool CollideWithLevel(std::vector <std::string>& levelData);
     bool CollideWithPlayer(glm::vec2 startPos, glm::vec2 endPos);
     bool CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition);
-
+    int Distance(glm::ivec2, glm::ivec2);
 
     glm::vec2 m_position;
     glm::vec2 m_direction;

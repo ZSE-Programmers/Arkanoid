@@ -11,8 +11,9 @@ public:
 
 	void CounterAdd();
 
+    int GetLife(){ return m_life; };
 	void LifeAdd();
-	bool LifeSubtract();
+	void LifeSubtract();
 
 private:
 	int m_counterBonuce;
