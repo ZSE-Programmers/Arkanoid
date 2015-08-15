@@ -29,6 +29,7 @@ void MainGame::InitSystems()
     m_playerTexture = m_sprite.LoadTexture("Textures/red_bricks.png", m_renderer);
     m_ballTexture = m_sprite.LoadTexture("Textures/circle.png", m_renderer);
     m_bricksTexture = m_sprite.LoadTexture("Textures/box.png", m_renderer);
+    m_upgradesTexture = m_sprite.LoadTexture("Textures/box1.png", m_renderer);
 
 	m_soundEffects.Init();
 
@@ -101,6 +102,18 @@ void MainGame::Draw()
         destRect.h = TILE_WIDTH;
         SDL_RenderCopy(m_renderer, m_bricksTexture, 0, &destRect);
     }
+
+    // Drawing upgrades
+    std::vector <glm::vec2> tmp_upgradesPosition = m_level.GetUpgradesPosition();
+    for (int i = 0; i < tmp_upgradesPosition.size(); i++)
+    {
+        SDL_Rect destRect;
+        destRect.x = tmp_upgradesPosition[i].x;
+        destRect.y = tmp_upgradesPosition[i].y;
+        destRect.w = TILE_WIDTH;
+        destRect.h = TILE_WIDTH;
+        SDL_RenderCopy(m_renderer, m_upgradesTexture, 0, &destRect);
+    }
     
     // Draw player
     std::vector <glm::vec2> platformPos = m_player.GetPlatformPosition();
@@ -130,29 +143,12 @@ void MainGame::Draw()
 void MainGame::Update()
 {
     m_player.Update();
-    if (m_ball.Update(m_level.GetLevelData(), m_player.GetStartPos(), m_player.GetEndPos(), m_level.GetBricksPosition()) != true)
+    if (m_ball.Update(m_level.GetLevelData(), m_player.GetStartPos(), m_player.GetEndPos(), m_level.GetBricksPosition()))
     {
-        m_playerStats.LifeSubtract();
 
-        if (m_playerStats.GetLife()) //life: 1 or more
-        {
-            m_soundEffects.PlaySound(1);
-            m_ball.Init(m_level.GetBallPosition(), glm::vec2(-0.5f, -0.5f), 0.2f, &m_soundEffects);
-            m_playerStats.ShowStats();
-        }
-        else
-        {
-            m_soundEffects.PlaySound(4); //LOSE
-            m_playerStats.ShowStats();
-
-            m_gameState = GameState::EXIT;
-        }
     }
-    if (!m_level.GetSizeVecBricks()) //WIN
+    else
     {
-        m_soundEffects.PlaySound(3);
-        m_playerStats.ShowStats();
-
-        m_gameState = GameState::EXIT;
+        m_gameState = GameState::EXIT; 
     }
 }

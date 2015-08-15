@@ -33,6 +33,7 @@ private:
     SDL_Texture* m_playerTexture;
     SDL_Texture* m_ballTexture;
     SDL_Texture* m_bricksTexture;
+    SDL_Texture* m_upgradesTexture;
 
     Window m_window;
     InputManager m_inputManager;

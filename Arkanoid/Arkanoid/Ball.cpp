@@ -26,20 +26,29 @@ bool Ball::Update(std::vector <std::string>& levelData, glm::vec2 startPos, glm:
 {
     m_position += m_direction * m_speed;
     
-    
+    // Colliding with level
     if (CollideWithLevel(levelData))
     {
         return true;
     }
+    // Colliding with bricks
     if (CollideWithBricks(levelData, bricksPosition))
     {
         return true;
     }
+    //Colliding with upgrades
+
+    // Colliding with player
     if (CollideWithPlayer(startPos, endPos))
     {
         return true;
     }
-    return false; //failed
+    // Check if ball is under player
+    if (CheckLose(startPos))
+    {
+        return false;
+    }
+    return true; 
 }
 
 bool Ball::CollideWithLevel(std::vector <std::string>& levelData)
@@ -51,7 +60,7 @@ bool Ball::CollideWithLevel(std::vector <std::string>& levelData)
         m_direction.x = -m_direction.x;
         return true;
     }
-    else if (pos.y < 1 || pos.y >= levelData.size() - 1)
+    else if (pos.y < 1)
     {
         m_direction.y = -m_direction.y;
         return true;
@@ -61,43 +70,20 @@ bool Ball::CollideWithLevel(std::vector <std::string>& levelData)
 
 bool Ball::CollideWithPlayer(glm::vec2 startPos, glm::vec2 endPos)
 {
-    glm::vec2 centerBall(m_position.x + BALL_RADIUS, m_position.y + BALL_RADIUS);
-    endPos.x += TILE_WIDTH;
-
-    if (centerBall.y + BALL_RADIUS >= startPos.y && centerBall.y < startPos.y)
+    glm::vec2 centerBallPos = glm::vec2(m_position + BALL_RADIUS);
+    if (centerBallPos.y + BALL_RADIUS >= startPos.y)
     {
-        if (centerBall.x + BALL_RADIUS > startPos.x && centerBall.x - BALL_RADIUS < endPos.x)
+        if (centerBallPos.x >= startPos.x && centerBallPos.x <= endPos.x + TILE_WIDTH)
         {
             m_direction.y = -m_direction.y;
             return true;
         }
-        else //player failed
+        else
         {
             return false;
         }
     }
-    else
-    {
-        return true;
-    }
-
-
-
-
-
-
-    /*if (m_position.x > startPos.x - 10 && m_position.x  < endPos.x + 15 && m_position.y + BALL_WIDTH >= startPos.y && m_position.y + BALL_RADIUS <= startPos.y)
-    {
-        m_direction.y = -m_direction.y;
-        return true;
-    }
-    else if (m_position.y > startPos.y)
-    { 
-        m_soundEffect->PlaySound(4);
-        return false;
-    }
-
-    return true;*/
+    return false; 
 }
 
 bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition)
@@ -227,7 +213,6 @@ bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <
             }
         }
     }
-
     else //RIGHT (BCFHI)
     {
         if (m_direction.y < 0) //TOP (BCF)
@@ -285,9 +270,6 @@ bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <
                 }
             }
         }
-
-
-
         else //BOTTOM (FHI)
         {
             //get all LEFT & TOP bricks corners
@@ -345,49 +327,18 @@ bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <
         }
         return false;
     }
-
-    /*if (levelData[gridPosition.y][gridPosition.x] == '1')
-    {
-        levelData[gridPosition.y][gridPosition.x] = '.';
-
-        glm::vec2 tilePosition = glm::vec2(gridPosition.x * TILE_WIDTH, gridPosition.y * TILE_WIDTH);
-        for (int i = 0; i < bricksPosition.size(); )
-        {
-            if (m_position.x <= bricksPosition[i].x + TILE_WIDTH &&
-                m_position.y <= bricksPosition[i].y + TILE_WIDTH &&
-                m_position.y + BALL_WIDTH >= bricksPosition[i].y)
-            {
-                m_direction.x = -m_direction.x;
-                bricksPosition[i] = bricksPosition.back();
-                bricksPosition.pop_back();
-                break;
-            }
-            else if (m_position.x + BALL_WIDTH >= bricksPosition[i].x &&
-                m_position.y <= bricksPosition[i].y + TILE_WIDTH &&
-                m_position.y + BALL_WIDTH >= bricksPosition[i].y)
-            {
-                m_direction.x = -m_direction.x;
-                bricksPosition[i] = bricksPosition.back();
-                bricksPosition.pop_back();
-                break;
-            }
-            else if (m_position.y + BALL_WIDTH >= bricksPosition[i].y &&
-                m_position.x + BALL_RADIUS >= bricksPosition[i].x &&
-                m_position.x <= bricksPosition[i].x + TILE_WIDTH)
-            {
-                m_direction.y = -m_direction.y;
-            }
-            else
-            {
-                i++;
-            }
-        }
-        return true;
-    }
-    return false;*/
 }
 
 int Ball::Distance(glm::ivec2 value1, glm::ivec2 value2) //Distance^2
 {
     return pow(value1.x - value2.x, 2) + pow(value1.y - value2.y, 2);
+}
+
+bool Ball::CheckLose(glm::vec2& playerPos)
+{
+    if (m_position.y >= playerPos.y - BALL_RADIUS)
+    {
+        return true;
+    }
+    return false;
 }

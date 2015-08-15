@@ -19,6 +19,8 @@ public:
     glm::vec2& GetPosition() { return m_position; }
     const float GetRadius() { return BALL_RADIUS; }
 
+    bool CheckLose(glm::vec2& playerPos);
+
     void SetBallPosition(glm::vec2 pos){ m_position = pos; }
 
 private:
