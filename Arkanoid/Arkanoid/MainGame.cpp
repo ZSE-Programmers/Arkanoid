@@ -26,7 +26,7 @@ void MainGame::InitSystems()
     m_window.Create(800, 600);
     m_renderer = m_window.GetRenderer();
     m_levelTexture = m_sprite.LoadTexture("Textures/light_bricks.png", m_renderer);
-    m_playerTexture = m_sprite.LoadTexture("Textures/red_bricks.png", m_renderer);
+    m_playerTexture = m_sprite.LoadTexture("Textures/light.png", m_renderer);
     m_ballTexture = m_sprite.LoadTexture("Textures/circle.png", m_renderer);
     m_bricksTexture = m_sprite.LoadTexture("Textures/box.png", m_renderer);
     m_upgradesTexture = m_sprite.LoadTexture("Textures/box1.png", m_renderer);
@@ -143,9 +143,12 @@ void MainGame::Draw()
 void MainGame::Update()
 {
     m_player.Update();
-    if (m_ball.Update(m_level.GetLevelData(), m_player.GetStartPos(), m_player.GetEndPos(), m_level.GetBricksPosition()))
+    if (m_ball.Update(m_level.GetLevelData(), m_player.GetStartPos(), m_player.GetEndPos(), m_level.GetBricksPosition(), m_level.GetUpgradesPosition()))
     {
-
+        if (m_ball.CollideWithUpgrades(m_level.GetUpgradesPosition()))
+        {
+            m_bonus.ActivateBonus();
+        }
     }
     else
     {
