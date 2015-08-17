@@ -49,3 +49,15 @@ Level::Level() : TILE_WIDTH(32.0f)
 Level::~Level()
 {
 }
+
+bool Level::Empty()
+{
+    if (m_bricksPosition.empty() && m_upgradesPosition.empty())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}

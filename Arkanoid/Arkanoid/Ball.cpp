@@ -4,7 +4,7 @@
 #include <iostream>
 #include <math.h>
 
-Ball::Ball()
+Ball::Ball() : m_points(0)
 {
 }
 
@@ -38,8 +38,9 @@ bool Ball::Update(std::vector <std::string>& levelData, glm::vec2 startPos, glm:
         return true;
     }
     // Colliding with bricks
-    if (CollideWithBricks(levelData, bricksPosition, upgradesPosition))
+    if (CollideWithBricks(levelData, bricksPosition))
     {
+        m_points += 10;
         return true;
     }
     //Colliding with upgrades
@@ -87,7 +88,7 @@ bool Ball::CollideWithPlayer(glm::vec2 startPos, glm::vec2 endPos)
     return false; 
 }
 
-bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition, std::vector <glm::vec2>& upgradesPosition)
+bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition)
 {
     // Direction flag
     int dirFlag = 0;
@@ -141,11 +142,6 @@ bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <
 
 bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
 {
-    /*  A | B | C
-    - - - - -
-    D | O | F
-    - - - - -
-    G | H | I  */
     glm::vec2 cornerPosition;
     glm::vec2 centerBall(floor(m_position.x + BALL_RADIUS), floor(m_position.y + BALL_RADIUS));
 
@@ -164,7 +160,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.y = -m_direction.y;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitB" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -176,7 +171,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.x = -m_direction.x;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitD" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -193,7 +187,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.y = -m_direction.y;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitH" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -205,7 +198,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.x = -m_direction.x;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitD" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -222,7 +214,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.y = -m_direction.y;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitB" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -234,7 +225,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.x = -m_direction.x;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitF" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -251,7 +241,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.y = -m_direction.y;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitH" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -263,7 +252,6 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
                 m_direction.x = -m_direction.x;
                 bricksPosition[i] = bricksPosition.back();
                 bricksPosition.pop_back();
-                std::cout << "hitF" << std::endl;
                 m_soundEffect->PlaySound(2);
                 return true;
             }
@@ -335,4 +323,10 @@ bool Ball::CollideWithUpgrades(std::vector <glm::vec2>& upgradesPosition)
         }
     }
     return false;
+}
+
+void Ball::SetPosition(glm::vec2 pos)
+{ 
+    m_position = pos;
+    m_direction = { 0.5, -0.5 };
 }

@@ -9,10 +9,10 @@
 class Bonus
 {
 public:
-	Bonus();
-	~Bonus();
-	void Init(Player* player, PlayerStats* playerstats);
-	void ActivateBonus();
+    Bonus();
+    ~Bonus();
+    void Init(Player* player, PlayerStats* playerstats);
+    void ActivateBonus();
 
 private:
 

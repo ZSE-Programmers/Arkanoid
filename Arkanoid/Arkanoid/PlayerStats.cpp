@@ -8,14 +8,7 @@ PlayerStats::PlayerStats()
 
 void PlayerStats::ShowStats()
 {
-	std::cout << "-----------------------" << std::endl
-		<< "Life:                 " << m_life << std::endl
-		<< "Counter:              " << m_counterBonuce << std::endl
-		<< "-----------------------"<< std::endl;
 }
-
-
-
 
 void PlayerStats::CounterAdd()
 {

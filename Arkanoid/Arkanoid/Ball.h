@@ -20,15 +20,16 @@ public:
 
     glm::vec2& GetPosition() { return m_position; }
     const float GetRadius() { return BALL_RADIUS; }
+    int GetPoints() { return m_points; }
 
     bool CheckLose(glm::vec2& playerPos);
 
-    void SetBallPosition(glm::vec2 pos){ m_position = pos; }
+    void SetPosition(glm::vec2 pos);
 
 private:
     bool CollideWithLevel(std::vector <std::string>& levelData);
     bool CollideWithPlayer(glm::vec2 startPos, glm::vec2 endPos);
-    bool CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition, std::vector <glm::vec2>& upgradesPosition);
+    bool CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition);
     bool CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag);
     
     float Distance(glm::ivec2, glm::ivec2);
@@ -41,6 +42,8 @@ private:
     const float BALL_RADIUS = BALL_WIDTH / 2.0f;
     const float TILE_WIDTH = 32.0f;
     const float TILE_RADIUS = TILE_WIDTH / 2.0f;
+
+    int m_points;
 
     SoundEffects* m_soundEffect;
 };

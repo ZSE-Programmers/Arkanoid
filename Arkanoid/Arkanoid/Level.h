@@ -10,6 +10,8 @@ public:
     Level();
     ~Level();
 
+    bool Empty();
+
     // Getters
     std::vector <std::string>& GetLevelData() { return m_levelData; }
     std::vector <glm::vec2>& GetLevelPosition() { return m_levelPosition; }

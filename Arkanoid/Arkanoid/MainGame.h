@@ -9,6 +9,8 @@
 #include "PlayerStats.h"
 #include "Ball.h"
 
+#include <SDL/SDL_ttf.h>
+
 const float TILE_WIDTH = 32.0f;
 
 enum class GameState { PLAY, EXIT };
@@ -27,6 +29,9 @@ private:
     void GameLoop();
     void Draw();
     void Update();
+    void UpdateScore();
+    void Victory();
+    void Lose();
 
     SDL_Renderer* m_renderer;
     SDL_Texture* m_levelTexture;
@@ -34,6 +39,10 @@ private:
     SDL_Texture* m_ballTexture;
     SDL_Texture* m_bricksTexture;
     SDL_Texture* m_upgradesTexture;
+    SDL_Texture* m_heartTexture;
+    SDL_Texture* m_textTexture;
+
+    TTF_Font* m_font;
 
     Window m_window;
     InputManager m_inputManager;

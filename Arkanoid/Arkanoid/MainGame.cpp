@@ -18,6 +18,7 @@ MainGame::~MainGame()
 void MainGame::Run()
 {
     InitSystems();
+
     GameLoop();
 }
 
@@ -25,19 +26,24 @@ void MainGame::InitSystems()
 {
     m_window.Create(800, 600);
     m_renderer = m_window.GetRenderer();
-    m_levelTexture = m_sprite.LoadTexture("Textures/light_bricks.png", m_renderer);
+    m_levelTexture = m_sprite.LoadTexture("Textures/leveltext.png", m_renderer);
     m_playerTexture = m_sprite.LoadTexture("Textures/light.png", m_renderer);
     m_ballTexture = m_sprite.LoadTexture("Textures/circle.png", m_renderer);
     m_bricksTexture = m_sprite.LoadTexture("Textures/box.png", m_renderer);
     m_upgradesTexture = m_sprite.LoadTexture("Textures/box1.png", m_renderer);
+    m_heartTexture = m_sprite.LoadTexture("Textures/heart.png", m_renderer);
+
+    TTF_Init();
+
+    m_font = TTF_OpenFont("Fonts/BEBAS.ttf", 32);
 
 	m_soundEffects.Init();
 
     m_levelPosition = m_level.GetLevelPosition();
 
-    m_player.Init(0.2f, m_level.GetPlayerPosition(), m_level.GetPlayerLenght(), &m_inputManager);
+    m_player.Init(0.5f, m_level.GetPlayerPosition(), m_level.GetPlayerLenght(), &m_inputManager);
 
-    m_ball.Init(m_level.GetBallPosition(), glm::vec2(0.5f, 0.5f), 0.2f, &m_soundEffects);
+    m_ball.Init(m_level.GetBallPosition(), glm::vec2(0.5f, -0.5f), 1.0f, &m_soundEffects);
 
 	m_bonus.Init(&m_player, &m_playerStats);
 }
@@ -51,6 +57,7 @@ void MainGame::ProcessInput()
         {
         case SDL_QUIT:
             m_gameState = GameState::EXIT;
+            exit(1);
             break;
         case SDL_MOUSEMOTION:
             //std::cout << tmp_event.motion.x << " " << tmp_event.motion.y << std::endl;
@@ -68,6 +75,7 @@ void MainGame::ProcessInput()
 void MainGame::GameLoop()
 {
     m_playerStats.ShowStats();
+    m_soundEffects.PlaySound(1);
     while (m_gameState != GameState::EXIT)
     {
         ProcessInput();
@@ -89,6 +97,19 @@ void MainGame::Draw()
         destRect.w = TILE_WIDTH;
         destRect.h = TILE_WIDTH;
         SDL_RenderCopy(m_renderer, m_levelTexture, 0, &destRect);
+    }
+
+    // Drawing player lifes
+    int tmp_x = 0;
+    for (int i = 0; i < m_playerStats.GetLife(); i++)
+    {
+        SDL_Rect destRect;
+        destRect.x = tmp_x;
+        destRect.y = 0;
+        destRect.w = 32;
+        destRect.h = 32;
+        SDL_RenderCopy(m_renderer, m_heartTexture, 0, &destRect);
+        tmp_x += 32;
     }
     
     // Drawing bricks
@@ -136,6 +157,9 @@ void MainGame::Draw()
     destVec.h = 2 * m_ball.GetRadius();
     SDL_RenderCopy(m_renderer, m_ballTexture, 0, &destVec);
 
+    // Updates score
+    UpdateScore();
+
     // Rendering everything to screen
     SDL_RenderPresent(m_renderer);
 }
@@ -144,14 +168,163 @@ void MainGame::Update()
 {
     m_player.Update();
     if (m_ball.Update(m_level.GetLevelData(), m_player.GetStartPos(), m_player.GetEndPos(), m_level.GetBricksPosition(), m_level.GetUpgradesPosition()))
-    {
+    {  
         if (m_ball.CollideWithUpgrades(m_level.GetUpgradesPosition()))
         {
             m_bonus.ActivateBonus();
         }
     }
     else
-    {
-        m_gameState = GameState::EXIT; 
+    { 
+        m_playerStats.LifeSubtract();
+        if (m_playerStats.GetLife() != 0)
+        {
+            m_ball.SetPosition(m_level.GetBallPosition());
+            SDL_Delay(1000);
+        }
+        else
+        {
+            // Lose
+            Lose();
+            m_gameState = GameState::EXIT;
+        }
     }
+
+    if (m_level.Empty())
+    {
+        // Win
+        Victory();
+    }
+}
+
+void MainGame::UpdateScore()
+{
+    std::string str = std::to_string(m_ball.GetPoints());
+    SDL_Color textColor = { 255, 255, 255, 255 };
+
+    SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, str.c_str(), textColor);
+    if (textSurface == NULL)
+    {
+        std::cout << "Unable to create text surface!" << std::endl;
+    }
+    else
+    {
+        m_textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+        if (m_textTexture == NULL)
+        {
+            std::cout << "Unable to create text texture!\n";
+        }
+        
+        SDL_FreeSurface(textSurface);
+    }
+
+    SDL_Rect destRect;
+    destRect.x = 750;
+    destRect.y = 0;
+    destRect.w = 32;
+    destRect.h = 32;
+
+    SDL_RenderCopy(m_renderer, m_textTexture, 0, &destRect);
+}
+
+void MainGame::Victory()
+{
+    SDL_RenderClear(m_renderer);
+    SDL_Color textColor = { 255, 255, 255, 255 };
+    SDL_Rect destRect{ 100, 350, 500, 100 };
+    // You have won! Congratulations!
+    SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, "You won! Congratulations!", textColor);
+    if (textSurface == NULL)
+    {
+        std::cout << "Unable to create text surface!" << std::endl;
+    }
+    else
+    {
+        m_textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+        if (m_textTexture == NULL)
+        {
+            std::cout << "Unable to create text texture!\n";
+        }
+
+        SDL_FreeSurface(textSurface);
+    }
+    SDL_RenderCopy(m_renderer, m_textTexture, 0, &destRect);
+
+    // Print score
+    std::string str = "You earned " + std::to_string(m_ball.GetPoints()) + " points!";
+    textSurface = TTF_RenderText_Solid(m_font, str.c_str(), textColor);
+    if (textSurface == NULL)
+    {
+        std::cout << "Unable to create text surface!" << std::endl;
+    }
+    else
+    {
+        m_textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+        if (m_textTexture == NULL)
+        {
+            std::cout << "Unable to create text texture!\n";
+        }
+
+        SDL_FreeSurface(textSurface);
+    }
+
+    destRect.y += 100;
+
+    SDL_RenderCopy(m_renderer, m_textTexture, 0, &destRect);
+    SDL_RenderPresent(m_renderer);
+
+    m_soundEffects.PlaySound(3);
+    SDL_Delay(5000);
+    exit(1);
+}
+
+void MainGame::Lose()
+{
+    SDL_RenderClear(m_renderer);
+    SDL_Color textColor = { 255, 255, 255, 255 };
+    SDL_Rect destRect{ 100, 350, 500, 100 };
+    // You have won! Congratulations!
+    SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, "You lost! :(", textColor);
+    if (textSurface == NULL)
+    {
+        std::cout << "Unable to create text surface!" << std::endl;
+    }
+    else
+    {
+        m_textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+        if (m_textTexture == NULL)
+        {
+            std::cout << "Unable to create text texture!\n";
+        }
+
+        SDL_FreeSurface(textSurface);
+    }
+    SDL_RenderCopy(m_renderer, m_textTexture, 0, &destRect);
+
+    // Print score
+    std::string str = "You earned " + std::to_string(m_ball.GetPoints()) + " points!";
+    textSurface = TTF_RenderText_Solid(m_font, str.c_str(), textColor);
+    if (textSurface == NULL)
+    {
+        std::cout << "Unable to create text surface!" << std::endl;
+    }
+    else
+    {
+        m_textTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+        if (m_textTexture == NULL)
+        {
+            std::cout << "Unable to create text texture!\n";
+        }
+
+        SDL_FreeSurface(textSurface);
+    }
+
+    destRect.y += 100;
+
+    SDL_RenderCopy(m_renderer, m_textTexture, 0, &destRect);
+    SDL_RenderPresent(m_renderer);
+
+    m_soundEffects.PlaySound(4);
+    SDL_Delay(5000);
+    exit(1);
 }
