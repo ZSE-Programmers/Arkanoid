@@ -41,6 +41,13 @@ void Player::Update()
     }
 }
 
+void Player::Restart(glm::vec2 position, int length)
+{
+    m_platformLength = length;
+    m_platform.clear();
+    BuildPlatform(position);
+}
+
 void Player::BuildPlatform(glm::vec2 position)
 {
     for (int i = 0; i < m_platformLength; i++)
@@ -54,17 +61,24 @@ void Player::ChangePlatformLength(int add)
 {
     m_platformLength += add;
     glm::vec2 tmp_position = m_platform[0];
-
     m_platform.clear();
 
-    if (add > 0)
+    if (add >= 0)
     {
-        tmp_position.x -= PLATFORM_WIDTH * add;
+        if (m_platformLength > 10)
+        {
+            m_platformLength = 10;
+        }
+        tmp_position.x -= PLATFORM_WIDTH / 2 * add;
         BuildPlatform(tmp_position);
     }
     else
     {
-        tmp_position.x = PLATFORM_WIDTH * add;
+        if (m_platformLength < 1)
+        {
+            m_platformLength = 1;
+        }
+        tmp_position.x += PLATFORM_WIDTH / 2 * add;
         BuildPlatform(tmp_position);
     }
 }

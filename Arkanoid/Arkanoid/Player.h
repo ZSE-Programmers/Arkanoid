@@ -20,6 +20,8 @@ public:
 
     void Update();
 
+    void Restart(glm::vec2 position, int length);
+
     std::vector <glm::vec2>& GetPlatformPosition() { return m_platform; }
     glm::vec2& GetStartPos() { return m_platform[0]; }
     glm::vec2& GetEndPos() { return m_platform.back(); }

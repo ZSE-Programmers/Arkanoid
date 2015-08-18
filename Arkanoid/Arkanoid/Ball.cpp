@@ -15,75 +15,104 @@ Ball::~Ball()
 
 void Ball::Init(glm::vec2 position, glm::vec2 direction, float speed, SoundEffects* soundEffect)
 {
-    m_position = position;
-    m_direction = direction;
-    m_speed = speed;
-    m_soundEffect = soundEffect;
+	m_position = position;
+	m_direction = direction;
+	m_speed = speed;
+	m_soundEffect = soundEffect;
 }
 
 
 bool Ball::Update(std::vector <std::string>& levelData, glm::vec2 startPos, glm::vec2 endPos, std::vector <glm::vec2>& bricksPosition, std::vector <glm::vec2>& upgradesPosition)
 {
-    m_position += m_direction * m_speed;
-    
-    // Colliding with player
-    if (CollideWithPlayer(startPos, endPos))
-    {
-        return true;
-    }
+	m_position += m_direction * m_speed;
 
-    // Colliding with level
-    if (CollideWithLevel(levelData))
-    {
-        return true;
-    }
-    // Colliding with bricks
-    if (CollideWithBricks(levelData, bricksPosition))
-    {
+	// Colliding with player
+	if (CollideWithPlayer(startPos, endPos))
+	{
+		return true;
+	}
+
+	// Colliding with level
+	if (CollideWithLevel(levelData))
+	{
+		return true;
+	}
+	// Colliding with bricks
+	if (CollideWithBricks(levelData, bricksPosition))
+	{
         m_points += 10;
-        return true;
-    }
-    //Colliding with upgrades
+		return true;
+	}
+	//Colliding with upgrades is in MainGame -> GameLoop()
 
-    // Check if ball is under player
-    if (CheckLose(startPos))
-    {
-        return false;
-    }
-    return true; 
+	// Check if ball is under player
+	if (CheckLose(startPos))
+	{
+		return false;
+	}
+	return true;
 }
 
 bool Ball::CollideWithLevel(std::vector <std::string>& levelData)
 {
-    glm::ivec2 pos(floor(m_position.x / 32.0f), floor(m_position.y / 32.0f));
+    glm::vec2 centerBallPos = glm::vec2(m_position + BALL_RADIUS);
 
-    if (pos.x < 1 || pos.x >= levelData[0].size() - 2)
-    {
-        m_direction.x = -m_direction.x;
-        return true;
-    }
-    else if (pos.y < 1)
+    if (centerBallPos.y - BALL_RADIUS <= TILE_WIDTH)
     {
         m_direction.y = -m_direction.y;
         return true;
     }
+    else if (centerBallPos.x - BALL_RADIUS <= TILE_WIDTH
+        || centerBallPos.x + BALL_RADIUS >= 768)
+    {
+        m_direction.x = -m_direction.x;
+        return true;
+    }
     return false;
+
+
+	/*glm::ivec2 pos(floor(m_position.x / 32.0f), floor(m_position.y / 32.0f));
+
+	if (pos.x < 1 || pos.x >= levelData[0].size() - 2)
+	{
+		m_direction.x = -m_direction.x;
+		return true;
+	}
+	else if (pos.y < 1)
+	{
+		m_direction.y = -m_direction.y;
+		return true;
+	}
+	return false;*/
 }
 
 bool Ball::CollideWithPlayer(glm::vec2 startPos, glm::vec2 endPos)
 {
-    glm::vec2 centerBallPos = glm::vec2(m_position + BALL_RADIUS);
-    if (centerBallPos.y + BALL_RADIUS >= startPos.y)
-    {
-        if (centerBallPos.x >= startPos.x - 10 && centerBallPos.x <= endPos.x + TILE_WIDTH + 10)
-        {
-            m_direction.y = -m_direction.y;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+	endPos.x += TILE_WIDTH;
+	glm::vec2 centerBallPos = glm::vec2(m_position + BALL_RADIUS);
+
+	float length = endPos.x - startPos.x; //length of platform (in px)
+	float partOfPlatform; // <0; 1>
+	//<0; 0.5) - colision left x--
+	//<0.5> - colision center
+	//(0.5; 1> - colision right x++
+
+	if (centerBallPos.y + BALL_RADIUS >= startPos.y)
+	{
+		if (Distance(startPos, centerBallPos) <= BALL_RADIUS*BALL_RADIUS
+			|| Distance(endPos, centerBallPos) <= BALL_RADIUS*BALL_RADIUS)//colision with corners
+			{
+				m_direction.y = -m_direction.y;
+				m_direction.x = -m_direction.x;
+				return true;
+			}
+		else if (centerBallPos.x >= startPos.x && centerBallPos.x <= endPos.x)
+		{
+			m_direction.y = -m_direction.y;
+			partOfPlatform = (centerBallPos.x - startPos.x) / (length - startPos.x);
+			m_direction.x += ((partOfPlatform - 0.5)/4.0);
+			return true;
+		}
     }
     return false; 
 }
@@ -118,10 +147,10 @@ bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <
     // Center ball position
     glm::vec2 centerBallPos = { m_position.x + BALL_RADIUS, m_position.y + BALL_RADIUS };
     // Minimum distance between objects
-    float MIN_DIST = BALL_RADIUS + TILE_RADIUS;
+    const float MIN_DIST = BALL_RADIUS + TILE_WIDTH*sqrt(2);
 
     // Looping trough bricks position vector
-    for (int i = 0; i < bricksPosition.size(); ++i)
+    for (int i = 0; i < bricksPosition.size(); i++)
     {
         // Center brick position
         glm::vec2 centerBrickPosition = { bricksPosition[i].x + TILE_RADIUS, bricksPosition[i].y + TILE_RADIUS};
@@ -132,8 +161,10 @@ bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <
         // If distance is less then minimum distance
         if (distance <= MIN_DIST)
         {
-            CollideBrick(bricksPosition, dirFlag);
-            return true;
+            if(CollideBrick(bricksPosition, dirFlag))
+            {
+                return true;
+            };
         }
     }
 
@@ -145,14 +176,34 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
     glm::vec2 cornerPosition;
     glm::vec2 centerBall(floor(m_position.x + BALL_RADIUS), floor(m_position.y + BALL_RADIUS));
 
-    //get all RIGHT & BOTTOM bricks corners
+
     for (int i = 0; i < bricksPosition.size(); i++)
     {
         if (dirFlag == 0)
         {
             cornerPosition = { bricksPosition[i].x + TILE_WIDTH, bricksPosition[i].y + TILE_WIDTH };
+            if (Distance(cornerPosition, centerBall) <= BALL_RADIUS * BALL_RADIUS)//A
+            {
+                if (abs(cornerPosition.x - centerBall.x) - abs(cornerPosition.y - centerBall.y) <= 2)
+                {
+                    m_direction.x = -m_direction.x;
+                    m_direction.y = -m_direction.y;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) < abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.x = -m_direction.x;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) > abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.y = -m_direction.y;
+                }
+                bricksPosition[i] = bricksPosition.back();
+                bricksPosition.pop_back();
+                m_soundEffect->PlaySound(2);
+                return true;
+            }
 
-            if (centerBall.y - BALL_RADIUS <= cornerPosition.y
+            else if (centerBall.y - BALL_RADIUS <= cornerPosition.y
                 && centerBall.y > cornerPosition.y
                 && centerBall.x < cornerPosition.x
                 && centerBall.x > cornerPosition.x - TILE_WIDTH)//B
@@ -179,7 +230,28 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
         {
             cornerPosition = { bricksPosition[i].x + TILE_WIDTH, bricksPosition[i].y };
 
-            if (centerBall.y + BALL_RADIUS >= cornerPosition.y
+            if (Distance(cornerPosition, centerBall) <= BALL_RADIUS * BALL_RADIUS)
+            {
+                if (abs(cornerPosition.x - centerBall.x) - abs(cornerPosition.y - centerBall.y) <= 2)
+                {
+                    m_direction.x = -m_direction.x;
+                    m_direction.y = -m_direction.y;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) < abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.x = -m_direction.x;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) > abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.y = -m_direction.y;
+                }
+                bricksPosition[i] = bricksPosition.back();
+                bricksPosition.pop_back();
+                m_soundEffect->PlaySound(2);
+                return true;
+            }
+
+            else if (centerBall.y + BALL_RADIUS >= cornerPosition.y
                 && centerBall.y < cornerPosition.y
                 && centerBall.x < cornerPosition.x
                 && centerBall.x > cornerPosition.x - TILE_WIDTH)//H
@@ -206,7 +278,28 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
         {
             cornerPosition = { bricksPosition[i].x, bricksPosition[i].y + TILE_WIDTH };
 
-            if (centerBall.y - BALL_RADIUS <= cornerPosition.y
+            if (Distance(cornerPosition, centerBall) <= BALL_RADIUS * BALL_RADIUS)
+            {
+                if (abs(cornerPosition.x - centerBall.x) - abs(cornerPosition.y - centerBall.y) <= 2)
+                {
+                    m_direction.x = -m_direction.x;
+                    m_direction.y = -m_direction.y;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) < abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.x = -m_direction.x;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) > abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.y = -m_direction.y;
+                }
+                bricksPosition[i] = bricksPosition.back();
+                bricksPosition.pop_back();
+                m_soundEffect->PlaySound(2);
+                return true;
+            }
+
+            else if (centerBall.y - BALL_RADIUS <= cornerPosition.y
                 && centerBall.y > cornerPosition.y
                 && centerBall.x < cornerPosition.x + TILE_WIDTH
                 && centerBall.x > cornerPosition.x)//B
@@ -233,7 +326,28 @@ bool Ball::CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag)
         {
             cornerPosition = { bricksPosition[i].x, bricksPosition[i].y };
 
-            if (centerBall.y + BALL_RADIUS >= cornerPosition.y
+            if (Distance(cornerPosition, centerBall) <= BALL_RADIUS * BALL_RADIUS)
+            {
+                if (abs(cornerPosition.x - centerBall.x) - abs(cornerPosition.y - centerBall.y) <= 2)
+                {
+                    m_direction.x = -m_direction.x;
+                    m_direction.y = -m_direction.y;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) < abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.x = -m_direction.x;
+                }
+                else if (abs(cornerPosition.x - centerBall.x) > abs(cornerPosition.y - centerBall.y))
+                {
+                    m_direction.y = -m_direction.y;
+                }
+                bricksPosition[i] = bricksPosition.back();
+                bricksPosition.pop_back();
+                m_soundEffect->PlaySound(2);
+                return true;
+            }
+
+            else if (centerBall.y + BALL_RADIUS >= cornerPosition.y
                 && centerBall.y < cornerPosition.y
                 && centerBall.x < cornerPosition.x + TILE_WIDTH
                 && centerBall.x > cornerPosition.x)//H

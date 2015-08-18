@@ -71,6 +71,7 @@
   <ItemGroup>
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="Bonus.cpp" />
+    <ClCompile Include="Fps.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
@@ -84,6 +85,7 @@
   <ItemGroup>
     <ClInclude Include="Ball.h" />
     <ClInclude Include="Bonus.h" />
+    <ClInclude Include="Fps.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="MainGame.h" />

@@ -8,6 +8,8 @@ MainGame::MainGame()
     m_levelTexture = nullptr;
     m_playerTexture = nullptr;
     m_ballTexture = nullptr;
+
+
 }
 
 
@@ -28,7 +30,7 @@ void MainGame::InitSystems()
     m_renderer = m_window.GetRenderer();
     m_levelTexture = m_sprite.LoadTexture("Textures/leveltext.png", m_renderer);
     m_playerTexture = m_sprite.LoadTexture("Textures/light.png", m_renderer);
-    m_ballTexture = m_sprite.LoadTexture("Textures/circle.png", m_renderer);
+    m_ballTexture = m_sprite.LoadTexture("Textures/ball.png", m_renderer);
     m_bricksTexture = m_sprite.LoadTexture("Textures/box.png", m_renderer);
     m_upgradesTexture = m_sprite.LoadTexture("Textures/box1.png", m_renderer);
     m_heartTexture = m_sprite.LoadTexture("Textures/heart.png", m_renderer);
@@ -41,9 +43,9 @@ void MainGame::InitSystems()
 
     m_levelPosition = m_level.GetLevelPosition();
 
-    m_player.Init(0.5f, m_level.GetPlayerPosition(), m_level.GetPlayerLenght(), &m_inputManager);
+    m_player.Init(5.0f, m_level.GetPlayerPosition(), m_level.GetPlayerLenght(), &m_inputManager);
 
-    m_ball.Init(m_level.GetBallPosition(), glm::vec2(0.5f, -0.5f), 1.0f, &m_soundEffects);
+    m_ball.Init(m_level.GetBallPosition(), glm::vec2(0.5f, -0.5f), 5.0f, &m_soundEffects);
 
 	m_bonus.Init(&m_player, &m_playerStats);
 }
@@ -78,9 +80,13 @@ void MainGame::GameLoop()
     m_soundEffects.PlaySound(1);
     while (m_gameState != GameState::EXIT)
     {
+        m_fps.Start();
+
         ProcessInput();
         Draw();
         Update();
+
+        m_fps.Delay();
     }
 }
 
@@ -180,6 +186,7 @@ void MainGame::Update()
         if (m_playerStats.GetLife() != 0)
         {
             m_ball.SetPosition(m_level.GetBallPosition());
+            m_player.Restart(m_level.GetPlayerPosition(), m_level.GetPlayerLenght());
             SDL_Delay(1000);
         }
         else

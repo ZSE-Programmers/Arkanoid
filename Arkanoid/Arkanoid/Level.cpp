@@ -29,7 +29,10 @@ Level::Level() : TILE_WIDTH(32.0f)
                 m_levelPosition.push_back(glm::vec2(x * TILE_WIDTH, y * TILE_WIDTH));
                 break;
             case '-':
-                m_playerPosition = glm::vec2(x * TILE_WIDTH, y * TILE_WIDTH);
+                if (!m_playerLenght)
+                {
+                    m_playerPosition = glm::vec2(x * TILE_WIDTH, y * TILE_WIDTH);
+                }
                 m_playerLenght++;
                 break;
             case ',':

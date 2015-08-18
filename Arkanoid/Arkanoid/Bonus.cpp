@@ -18,15 +18,18 @@ void Bonus::Init(Player* player, PlayerStats* playerstats)
 void Bonus::ActivateBonus()
 {
 	static std::mt19937 randomEngine(time(nullptr));
-	std::uniform_int_distribution <int> roll(1, 2);
+	std::uniform_int_distribution <int> roll(1, 6);
 
 	switch (roll(randomEngine))
 	{
 	case 1://upgrade platform
-		m_player->ChangePlatformLength(1);
+        m_player->ChangePlatformLength(1);
 		break;
 	case 2://add life
 		m_playerStats->LifeAdd();
 		break;
+    case 3://downgrade platform
+        m_player->ChangePlatformLength(-1);
+        break;
 	}
 }

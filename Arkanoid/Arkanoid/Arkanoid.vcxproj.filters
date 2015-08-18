@@ -48,6 +48,9 @@
     <ClCompile Include="SoundEffects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Fps.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SoundEffects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fps.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

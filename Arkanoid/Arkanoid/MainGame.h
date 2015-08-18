@@ -8,7 +8,7 @@
 #include "Player.h"
 #include "PlayerStats.h"
 #include "Ball.h"
-
+#include "Fps.h"
 #include <SDL/SDL_ttf.h>
 
 const float TILE_WIDTH = 32.0f;
@@ -57,5 +57,7 @@ private:
 
 	Bonus m_bonus;
     std::vector <glm::vec2> m_levelPosition;
+
+    Fps m_fps;
 };
 
