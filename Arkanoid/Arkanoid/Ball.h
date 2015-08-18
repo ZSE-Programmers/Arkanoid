@@ -32,6 +32,9 @@ private:
     bool CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition);
     bool CollideBrick(std::vector <glm::vec2>& bricksPosition, int dirFlag);
     
+	void checkArray();
+	void normalize();
+
     float Distance(glm::ivec2, glm::ivec2);
 
     glm::vec2 m_position;

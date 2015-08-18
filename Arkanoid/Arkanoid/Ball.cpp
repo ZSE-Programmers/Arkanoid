@@ -96,25 +96,67 @@ bool Ball::CollideWithPlayer(glm::vec2 startPos, glm::vec2 endPos)
 	//<0; 0.5) - colision left x--
 	//<0.5> - colision center
 	//(0.5; 1> - colision right x++
-
 	if (centerBallPos.y + BALL_RADIUS >= startPos.y)
 	{
-		if (Distance(startPos, centerBallPos) <= BALL_RADIUS*BALL_RADIUS
+		if (centerBallPos.x >= startPos.x && centerBallPos.x <= endPos.x)
+		{
+			partOfPlatform = (centerBallPos.x - startPos.x) / (length - startPos.x);
+
+			m_direction.x += ((partOfPlatform - 0.5) * 0.4);
+
+
+			//check array
+			//x <-0.9 ; -(pow(0.19, 1/2))> & <(pow(0.19, 1/2)); 0.9>
+			std::cout << m_direction.x << "\t";
+			checkArray();
+			std::cout << m_direction.x << "\t";
+			normalize();
+			std::cout << m_direction.y << std::endl;
+			return true;
+		}
+		else if (Distance(startPos, centerBallPos) <= BALL_RADIUS*BALL_RADIUS
 			|| Distance(endPos, centerBallPos) <= BALL_RADIUS*BALL_RADIUS)//colision with corners
-			{
-				m_direction.y = -m_direction.y;
-				m_direction.x = -m_direction.x;
-				return true;
-			}
-		else if (centerBallPos.x >= startPos.x && centerBallPos.x <= endPos.x)
 		{
 			m_direction.y = -m_direction.y;
-			partOfPlatform = (centerBallPos.x - startPos.x) / (length - startPos.x);
-			m_direction.x += ((partOfPlatform - 0.5)/4.0);
+			m_direction.x = -m_direction.x;
 			return true;
 		}
     }
     return false; 
+}
+
+void Ball::checkArray()
+{
+	const float tmp = pow(0.19, 0.5);
+	//x <-0.9 ; -(pow(0.19, 1/2))> & <(pow(0.19, 1/2)); 0.9>
+
+	if (m_direction.x < 0)
+	{
+		if (m_direction.x < -0.9)
+		{
+			m_direction.x = -0.9;
+		}
+		else if (m_direction.x > -tmp)
+		{
+			m_direction.x = -tmp;
+		}
+	}
+	else
+	{
+		if (m_direction.x > 0.9)
+		{
+			m_direction.x = 0.9;
+		}
+		else if (m_direction.x < tmp)
+		{
+			m_direction.x = tmp;
+		}
+	}
+}
+
+void Ball::normalize()
+{
+	m_direction.y = -abs(pow((1.0 - m_direction.x)*(1.0 + m_direction.x), 0.5));
 }
 
 bool Ball::CollideWithBricks(std::vector <std::string>& levelData, std::vector <glm::vec2>& bricksPosition)

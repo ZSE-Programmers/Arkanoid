@@ -45,7 +45,8 @@ void MainGame::InitSystems()
 
     m_player.Init(5.0f, m_level.GetPlayerPosition(), m_level.GetPlayerLenght(), &m_inputManager);
 
-    m_ball.Init(m_level.GetBallPosition(), glm::vec2(0.5f, -0.5f), 5.0f, &m_soundEffects);
+	float tmp = pow(2.0, 0.5) / 2.0;
+	m_ball.Init(m_level.GetBallPosition(), glm::vec2(tmp, -tmp), 5.0f, &m_soundEffects);
 
 	m_bonus.Init(&m_player, &m_playerStats);
 }
